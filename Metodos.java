@@ -1,226 +1,263 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class Metodos {
-    private int contadorTurnos = 1;
 
-    private void registrarHistorial(ArrayList<String> historial, String accion) {
-        historial.add(accion);
-    }
+    public Queue<ObjCliente> LlenarCola(Queue<ObjCliente> cola, Metodos m, Scanner sc, int numCaja) {
+        boolean continuar = true;
 
-    public List<Queue<Cliente>> inicializarCajas(int numCajas) {
-        List<Queue<Cliente>> cajas = new ArrayList<>();
-        for (int i = 0; i < numCajas; i++) {
-            cajas.add(new LinkedList<>());
+        while (continuar) {
+            ObjCliente o = new ObjCliente();
+            o.setTurno(m.ValidarTurno(cola));
+            o.setCaja(numCaja);
+            System.out.println("Ingrese el nombre del cliente ");
+            sc.nextLine();
+            o.setNombre(sc.nextLine());
+            o.setMotivo(m.MenuMotivo(sc));
+            o.setEstado(1);
+            System.out.println("Desea Agregar mas clientes 1 si , 2 no ");
+            int opt = sc.nextInt();
+            if (opt == 2) {
+                System.out.println("Vuelve Pronto");
+                continuar = false;
+            }
+            cola.offer(o);
+
         }
-        return cajas;
+        return cola;
+
     }
 
-    private int cajaConMenosClientes(List<Queue<Cliente>> cajas) {
-        int indiceMenor = 0;
-        for (int i = 1; i < cajas.size(); i++) {
-            if (cajas.get(i).size() < cajas.get(indiceMenor).size()) {
-                indiceMenor = i;
+    public int ValidarTurno(Queue<ObjCliente> cola) {
+        int turno = 0;
+        if (cola.isEmpty()) {
+            turno = 1;
+        } else {
+            turno = cola.size() + 1;
+        }
+        return turno;
+    }
+
+    public int MenuMotivo(Scanner sc) {
+        System.out.println("Motivo de atencion del cliente");
+        System.out.println("1) Devolucion");
+        System.out.println("2) Reclamo");
+        System.out.println("3) Pago especial");
+        System.out.println("4) Consulta");
+        System.out.println("5) Otro ");
+        return sc.nextInt();
+
+    }
+
+    public String MostrarTodosTurnos(Queue<ObjCliente> cola, int opt) {
+        switch (opt) {
+            case 1:
+                for (ObjCliente o : cola) {
+                    System.out.println("Turno: " + o.getTurno());
+                    System.out.println("Cliente: " + o.getNombre());
+                    System.out.println(MenuMotivito(o.getMotivo()));
+                    System.out.println("Caja: " + o.getCaja());
+                    if (o.getEstado() == 1) {
+                        System.out.println("Estado: Esperando");
+                    } else if (o.getEstado() == 2) {
+                        System.out.println("Estado: Atendido");
+                    } else {
+                        System.out.println("Estado: Abandono");
+                    }
+                    System.out.println("----------------------------------------- \n");
+
+                }
+
+                break;
+            case 2:
+                for (ObjCliente o : cola) {
+                    if (o.getEstado() == 1) {
+                        System.out.println("Turno: " + o.getTurno());
+                        System.out.println("Cliente: " + o.getNombre());
+                        System.out.println(MenuMotivito(o.getMotivo()));
+                        System.out.println("Caja: " + o.getCaja());
+                        if (o.getEstado() == 1) {
+                            System.out.println("Estado: Esperando");
+                        } else if (o.getEstado() == 2) {
+                            System.out.println("Estado: Atendido");
+                        } else {
+                            System.out.println("Estado: Abandono");
+                        }
+                    }
+
+                }
+                break;
+
+            default:
+                for (ObjCliente o : cola) {
+                    if (o.getEstado() != 1) {
+                        System.out.println("Turno: " + o.getTurno());
+                        System.out.println("Cliente: " + o.getNombre());
+                        System.out.println(MenuMotivito(o.getMotivo()));
+                        System.out.println("Caja: " + o.getCaja());
+                        if (o.getEstado() == 1) {
+                            System.out.println("Estado: Esperando");
+                        } else if (o.getEstado() == 2) {
+                            System.out.println("Estado: Atendido");
+                        } else {
+                            System.out.println("Estado: Abandono");
+                        }
+
+                    }
+
+                }
+                break;
+        }
+        return "Datos mostrados correctamente";
+    }
+
+    private static String MenuMotivito(int opt) {
+        String mensaje = "";
+        switch (opt) {
+            case 1:
+                mensaje = "Devolucion";
+                break;
+            case 2:
+                mensaje = "Reclamo";
+                break;
+            case 3:
+                mensaje = "Pago especial";
+                break;
+            case 4:
+                mensaje = "Consulta";
+                break;
+
+            default:
+                mensaje = "Otro";
+                break;
+        }
+        return mensaje;
+    }
+
+    public Queue<ObjCliente> Atender(Queue<ObjCliente> cola) {
+        for (ObjCliente o : cola) {
+            if (o.getEstado() == 1) {
+                System.out.println("El siguiente turno es " + o.getTurno() + " cliente: " + o.getNombre());
+                o.setEstado(2);
+                break;
             }
         }
-        return indiceMenor + 1;
+        System.out.println("Turno atendido correctamente ");
+        return cola;
     }
 
-    public List<Queue<Cliente>> registrarCliente(List<Queue<Cliente>> cajas, Scanner sc,
-            ArrayList<String> historial) {
-        sc.nextLine();
-        System.out.println("Ingrese el nombre del cliente: ");
-        String nombre = sc.nextLine();
-
-        System.out.println("Ingrese el motivo de atención (ej: devolución, reclamo, pago especial): ");
-        String motivo = sc.nextLine();
-        System.out.println("Elija la caja (1 a " + cajas.size() + "), o ingrese 0 para asignación automática: ");
-        int opt = validarEntero(sc);
-        int cajaElegida;
-        if (opt == 0) {
-            cajaElegida = cajaConMenosClientes(cajas);
-            System.out.println("Asignado automáticamente a la caja " + cajaElegida);
-        } else if (opt >= 1 && opt <= cajas.size()) {
-            cajaElegida = opt;
-        } else {
-            System.out.println("Caja inválida, se asigna automáticamente");
-            cajaElegida = cajaConMenosClientes(cajas);
-        }
-        Cliente c = new Cliente ();
-        cajas.get(cajaElegida - 1).offer(c);
-        registrarHistorial(historial,
-                "Turno " + contadorTurnos + " (" + nombre + ") se formó en la caja " + cajaElegida);
-        System.out.println("Turno asignado: " + contadorTurnos + " en la caja " + cajaElegida);
-        contadorTurnos++;
-        return cajas;
-    }
-
-    
-    public Queue<Cliente> atenderCliente(List<Queue<Cliente>> cajas, Queue<Cliente> atendidos, Scanner sc,
-            ArrayList<String> historial) {
-        System.out.println("¿Qué caja va a atender? (1 a " + cajas.size() + "): ");
-        int numCaja = validarEntero(sc);
-        if (numCaja < 1 || numCaja > cajas.size()) {
-            System.out.println("Caja inválida");
-            return atendidos;
-        }
-        Queue<Cliente> fila = cajas.get(numCaja - 1);
-        if (fila.isEmpty()) {
-            System.out.println("La caja " + numCaja + " no tiene clientes esperando");
-        } else {
-            Cliente c = fila.poll();
-            c.setEstado("Atendido");
-
-            atendidos.offer(c);
-            registrarHistorial(historial,
-                    "Turno " + c.getTurno() + " (" + c.getNombre() + ") atendido en caja " + numCaja);
-            System.out.println("Se atendió: " + c);
-        }
-        return atendidos;
-    }
-
-    public Queue<Cliente> abandonarFila(List<Queue<Cliente>> cajas, Queue<Cliente> abandonos, Scanner sc,
-            ArrayList<String> historial) {
-        System.out.println("Ingrese el turno que abandona la fila: ");
-        int turno = validarEntero(sc);
-        Cliente c = buscarYRemoverEnCajas(cajas, turno);
-        if (c == null) {
-            System.out.println("No se encontró ese turno en ninguna caja");
-        } else {
-            c.setEstado("Abandono");
-            abandonos.offer(c);
-            registrarHistorial(historial,
-                    "Turno " + turno + " (" + c.getNombre() + ") abandonó la fila de la caja " + c.getCaja());
-            System.out.println("Cliente marcado como abandono");
-        }
-        return abandonos;
-    }
-
-    public List<Queue<Cliente>> cambiarCaja(List<Queue<Cliente>> cajas, Scanner sc, ArrayList<String> historial) {
-        System.out.println("Ingrese el turno que quiere cambiar de caja: ");
-        int turno = validarEntero(sc);
-        Cliente c = buscarYRemoverEnCajas(cajas, turno);
-        if (c == null) {
-            System.out.println("No se encontró ese turno en ninguna caja");
-            return cajas;
-        }
-        System.out.println("Elija la nueva caja (1 a " + cajas.size() + "): ");
-        int nuevaCaja = validarEntero(sc);
-        if (nuevaCaja < 1 || nuevaCaja > cajas.size()) {
-            System.out.println("Caja inválida, el cliente vuelve a su caja original");
-            nuevaCaja = c.getCaja();
-        }
-
-        int cajaAnterior = c.getCaja();
-        c.setCaja(nuevaCaja);
-        cajas.get(nuevaCaja - 1).offer(c);
-        registrarHistorial(historial, "Turno " + turno + " (" + c.getNombre() + ") cambió de la caja "
-                + cajaAnterior + " a la caja " + nuevaCaja);
-        System.out.println("Cliente movido a la caja " + nuevaCaja);
-        return cajas;
-    }
-
-    public List<Queue<Cliente>> reasignarPorDisponibilidad(List<Queue<Cliente>> cajas, Scanner sc,
-            ArrayList<String> historial) {
-        System.out.println("Ingrese el turno a reasignar a una caja disponible: ");
-        int turno = validarEntero(sc);
-        Cliente c = buscarYRemoverEnCajas(cajas, turno);
-        if (c == null) {
-            System.out.println("No se encontró ese turno en ninguna caja");
-            return cajas;
-        }
-        int cajaAnterior = c.getCaja();
-        int cajaNueva = cajaConMenosClientes(cajas);
-        c.setCaja(cajaNueva);
-        cajas.get(cajaNueva - 1).offer(c);
-        registrarHistorial(historial, "Turno " + turno + " (" + c.getNombre() + ") reasignado de la caja "
-                + cajaAnterior + " a la caja " + cajaNueva + " por disponibilidad");
-        System.out.println("Cliente reasignado automáticamente a la caja " + cajaNueva);
-        return cajas;
-    }
-
-    private Cliente buscarYRemoverEnCajas(List<Queue<Cliente>> cajas, int turno) {
-        for (Queue<Cliente> fila : cajas) {
-            Cliente encontrado = removerDeCola(fila, turno);
-            if (encontrado != null) {
-                return encontrado;
+    public Queue<ObjCliente> Abandonar(Queue<ObjCliente> cola, int turno) {
+        for (ObjCliente o : cola) {
+            if (o.getTurno() == turno) {
+                System.out.println("El cliente " + o.getNombre() + " abandono la fila");
+                o.setEstado(3);
+                break;
             }
         }
-        return null;
-
+        return cola;
     }
 
-    private Cliente removerDeCola(Queue<Cliente> cola, int turno) {
-        Queue<Cliente> aux = new LinkedList<>();
-        Cliente encontrado = null;
-        while (!cola.isEmpty()) {
-            Cliente actual = cola.poll();
-            if (actual.getTurno() == turno && encontrado == null) {
-                encontrado = actual;
+ 
+    public Queue<ObjCliente> CambiarCaja(Queue<ObjCliente> colaActual, Queue<ObjCliente> colaDestino, int turno,
+            int numCajaDestino) {
+        Queue<ObjCliente> aux = new LinkedList<>();
+        ObjCliente encontrado = null;
+
+        while (!colaActual.isEmpty()) {
+            ObjCliente o = colaActual.poll();
+            if (o.getTurno() == turno && encontrado == null) {
+                encontrado = o;
             } else {
-                aux.offer(actual);
+                aux.offer(o);
             }
         }
         while (!aux.isEmpty()) {
-            cola.offer(aux.poll());
+            colaActual.offer(aux.poll());
         }
-        return encontrado;
-    }
 
-    public void mostrarCaja(List<Queue<Cliente>> cajas, int numCaja) {
-        if (numCaja < 1 || numCaja > cajas.size()) {
-            System.out.println("Caja inválida");
-            return;
-        }
-        Queue<Cliente> fila = cajas.get(numCaja - 1);
-        if (fila.isEmpty()) {
-            System.out.println("La caja " + numCaja + " no tiene clientes esperando");
+        if (encontrado == null) {
+            System.out.println("No se encontro ese turno en la caja actual");
         } else {
-            System.out.println("Fila de la caja " + numCaja + ":");
-            for (Cliente c : fila) {
-                System.out.println(c);
-            }
+            encontrado.setCaja(numCajaDestino);
+            encontrado.setTurno(ValidarTurno(colaDestino));
+            colaDestino.offer(encontrado);
+            System.out.println("Cliente movido a la nueva caja correctamente");
         }
+        return colaDestino;
     }
 
-    public void mostrarTodasLasCajas(List<Queue<Cliente>> cajas) {
-        for (int i = 0; i < cajas.size(); i++) {
-            mostrarCaja(cajas, i + 1);
-        }
-    }
-
-    public void mostrarCola(Queue<Cliente> cola, String titulo) {
-        if (cola.isEmpty()) {
-
-            System.out.println(titulo + ": no hay registros");
-        } else {
-            System.out.println(titulo + ":");
-            for (Cliente c : cola) {
-                System.out.println(c);
-            }
-        }
-    }
-
-    public void mostrarHistorial(ArrayList<String> historial) {
-        if (historial.isEmpty()) {
-            System.out.println("Aún no se ha realizado ninguna operación");
-        } else {
-            String[] arregloHistorial = historial.toArray(new String[0]);
-            System.out.println("Historial de operaciones:");
-            for (int i = 0; i < arregloHistorial.length; i++) {
-                System.out.println((i + 1) + ". " + arregloHistorial[i]);
-            }
-        }
-    }
-
-    public int validarEntero(Scanner sc) {
+    public int ValidarEentero(Scanner sc) {
         while (!sc.hasNextInt()) {
-            System.out.println("Por favor ingrese un valor numerico valido");
+            System.out.println(
+                    "Por favor tenga en cuenta que se le esta pidiendo un dato numerico ojala en el rango de 1 a 5 ");
             sc.next();
         }
         return sc.nextInt();
     }
+
+    public Stack<ObjCliente> Apilar(Queue<ObjCliente> c, Stack<ObjCliente> p) {
+        for (ObjCliente o : c) {
+            if (o.getEstado() == 1) {
+                p.push(o);
+            }
+        }
+        return p;
+    }
+
+    public void MostrarPila(Stack<ObjCliente> p) {
+        for (ObjCliente o : p) {
+            System.out.println("Turno: " + o.getTurno());
+            System.out.println("Cliente: " + o.getNombre());
+            System.out.println(MenuMotivito(o.getMotivo()));
+            System.out.println("Caja: " + o.getCaja());
+            if (o.getEstado() == 1) {
+                System.out.println("Estado: Esperando");
+            } else if (o.getEstado() == 2) {
+                System.out.println("Estado: Atendido");
+            } else {
+                System.out.println("Estado: Abandono");
+            }
+        }
+    }
+
+    public ObjCliente[] ArregloAtendidos(Queue<ObjCliente> c) {
+        ObjCliente[] arreglo = new ObjCliente[Dimension(c)];
+        int i = 0;
+        for (ObjCliente o : c) {
+            if (o.getEstado() != 1) {
+                arreglo[i] = o;
+                i++;
+            }
+        }
+        return arreglo;
+    }
+
+    private static int Dimension(Queue<ObjCliente> c) {
+        int cont = 0;
+        for (ObjCliente o : c) {
+            if (o.getEstado() != 1) {
+                cont++;
+            }
+        }
+        return cont;
+    }
+
+    public void MostrarArreglo(ObjCliente[] a) {
+        for (int i = 0; i < a.length; i++) {
+            System.out.println("Turno: " + a[i].getTurno());
+            System.out.println("Cliente: " + a[i].getNombre());
+            System.out.println(MenuMotivito(a[i].getMotivo()));
+            System.out.println("Caja: " + a[i].getCaja());
+            if (a[i].getEstado() == 1) {
+                System.out.println("Estado: Esperando");
+            } else if (a[i].getEstado() == 2) {
+                System.out.println("Estado: Atendido");
+            } else {
+                System.out.println("Estado: Abandono");
+            }
+        }
+    }
+
 }
