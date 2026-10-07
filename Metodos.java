@@ -47,7 +47,7 @@ public class Metodos {
         System.out.println("3) Pago especial");
         System.out.println("4) Consulta");
         System.out.println("5) Otro ");
-        return sc.nextInt();
+        return ValidarEentero(sc);
 
     }
 
@@ -259,5 +259,4 @@ public class Metodos {
             }
         }
     }
-
  }
